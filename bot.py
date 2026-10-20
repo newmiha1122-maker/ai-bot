@@ -11,30 +11,33 @@ from dotenv import load_dotenv
 
 from database import init_db, check_subscription, grant_subscription, get_ai_status, set_ai_status, get_user_status, add_warning
 
-# Добавь эти импорты в начало bot.py:
-from aiohttp import web
-
-# Добавь простейшую заглушку для порта Render:
+# Заглушка сервера для бесплатных Web Services на Render
 async def handle_ping(request):
-    return web.Response(text="Bot is alive!")
+    return web.Response(text="Guchiman 1.0 Bot is running successfully!")
 
-# И обнови функцию main() в самом низу bot.py:
 async def main():
     await init_db()
     dp.include_router(router)
     logging.basicConfig(level=logging.INFO)
-    
-    # Запуск миникального веб-сервера для Render
+
+    # 1. Сначала запускаем веб-сервер и ЖДЕМ открытия порта (Render требует это сразу!)
     app = web.Application()
     app.router.add_get("/", handle_ping)
     runner = web.AppRunner(app)
     await runner.setup()
-    port = int(os.getenv("PORT", 8080))
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    asyncio.create_task(site.start())
     
-    print("Guchiman 1.0 запущен и слушает порт Render!")
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()  # Порт открывается мгновенно и блокирует ошибку Render
+    print(f"🟢 Веб-сервер успешно запущен на порту {port}!")
+
+    # 2. Только после открытия порта запускаем самого бота
+    print("Guchiman 1.0 запущен и слушает Telegram!")
     await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
 
 
 load_dotenv()
