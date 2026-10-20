@@ -206,10 +206,10 @@ async def chat_with_ai(message: Message):
     if custom_facts:
         full_prompt += f"\n\n[ДОПОЛНИТЕЛЬНЫЕ ВЫУЧЕННЫЕ ФАКТЫ ОТ АДМИНА]:\n{custom_facts}"
 
-    # 6. Запрос к Gemini (используем актуальную gemini-3.8-flash)
+    # 6. Запрос к Gemini (используем gemini-3.5-flash-lite)
     try:
         response = await ai_client.aio.models.generate_content(
-            model='gemini-3.8-flash',
+            model='gemini-3.5-flash-lite',
             contents=message.text,
             config=types.GenerateContentConfig(
                 system_instruction=full_prompt,
@@ -219,7 +219,7 @@ async def chat_with_ai(message: Message):
         await message.answer(response.text)
     except Exception as e:
         print(f"❌ КРИТИЧЕСКАЯ ОШИБКА GEMINI: {e}")
-        await message.answer("⚠️ Ошибка связи с серверами Guchiman. Попробуй позже.")
+        await message.answer(f"⚠️ Ошибка от Google: {e}")
 
 # Заглушка сервера для бесплатных Web Services на Render
 async def handle_ping(request):
