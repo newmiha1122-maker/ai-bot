@@ -11,6 +11,32 @@ from dotenv import load_dotenv
 
 from database import init_db, check_subscription, grant_subscription, get_ai_status, set_ai_status, get_user_status, add_warning
 
+# Добавь эти импорты в начало bot.py:
+from aiohttp import web
+
+# Добавь простейшую заглушку для порта Render:
+async def handle_ping(request):
+    return web.Response(text="Bot is alive!")
+
+# И обнови функцию main() в самом низу bot.py:
+async def main():
+    await init_db()
+    dp.include_router(router)
+    logging.basicConfig(level=logging.INFO)
+    
+    # Запуск миникального веб-сервера для Render
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.getenv("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    asyncio.create_task(site.start())
+    
+    print("Guchiman 1.0 запущен и слушает порт Render!")
+    await dp.start_polling(bot)
+
+
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
