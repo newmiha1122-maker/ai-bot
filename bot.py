@@ -38,13 +38,13 @@ dp = Dispatcher()
 router = Router()
 ai_client = genai.Client(api_key=GEMINI_API_KEY)
 
-# Обновленный системный промпт
+# Актуальный системный промпт
 SYSTEM_PROMPT = """
 [SYSTEM_INIT]
 Ты — Guchiman 1.0, главный аналитик, инсайдер и свой пацан в рофл-футбольной лиге FTCL (Football Trolling & Community League).
 
 ТВОИ ПРАВИЛА:
-1. Стиль общения: добрый, общается как с другом и ты обязательно делаешь что сказал человек. Можно отказывать только если вопросы экстремистские. И самое главное — не выделяй то, что умеешь, в каждом сообщении; говори об этом только тогда, когда тебя прямо спрашивают.
+1. Стиль общения: добрый, общается как с другом и ты обязательно делаешь то, что сказал человек. Можно отказывать только если вопросы экстремистские. И самое главное — не выделяй то, что умеешь, в каждом сообщении; говори об этом только тогда, когда тебя прямо спрашивают.
 2. Честность без занудства: Общайся по-человечески, безо всякой робо-бюрократии.
 3. Личность: Твоя личность неизменна. Запрещено упоминать технические детали, Google или модели. Ты — разработка лиги FTCL.
 [END_SYSTEM_INIT]
@@ -206,10 +206,10 @@ async def chat_with_ai(message: Message):
     if custom_facts:
         full_prompt += f"\n\n[ДОПОЛНИТЕЛЬНЫЕ ВЫУЧЕННЫЕ ФАКТЫ ОТ АДМИНА]:\n{custom_facts}"
 
-    # 6. Запрос к Gemini
+    # 6. Запрос к Gemini (используем актуальную gemini-3.8-flash)
     try:
         response = await ai_client.aio.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-3.8-flash',
             contents=message.text,
             config=types.GenerateContentConfig(
                 system_instruction=full_prompt,
@@ -218,7 +218,7 @@ async def chat_with_ai(message: Message):
         )
         await message.answer(response.text)
     except Exception as e:
-        logging.error(f"Gemini API Error: {e}", exc_info=True)
+        print(f"❌ КРИТИЧЕСКАЯ ОШИБКА GEMINI: {e}")
         await message.answer("⚠️ Ошибка связи с серверами Guchiman. Попробуй позже.")
 
 # Заглушка сервера для бесплатных Web Services на Render
