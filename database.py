@@ -24,6 +24,12 @@ async def init_db():
                 is_blocked INTEGER DEFAULT 0
             )
         """)
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS custom_knowledge (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fact TEXT
+            )
+        """)
         await db.commit()
         
         async with db.execute("SELECT value FROM settings WHERE key = 'ai_status'") as cursor:
@@ -81,3 +87,22 @@ async def add_warning(user_id: int):
         await db.execute("INSERT OR REPLACE INTO users (user_id, warnings, is_blocked) VALUES (?, ?, ?)", (user_id, warnings, blocked))
         await db.commit()
     return warnings, blocked == 1
+
+# --- Динамическое обучение ---
+async def add_knowledge(fact: str):
+    async with aiosqlite.connect(DB_NAME) as db:
+        await db.execute("INSERT INTO custom_knowledge (fact) VALUES (?)", (fact,))
+        await db.commit()
+
+async def get_all_knowledge() -> str:
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute("SELECT fact FROM custom_knowledge") as cursor:
+            rows = await cursor.fetchall()
+            if not rows:
+                return ""
+            return "\n".join([f"• {row[0]}" for row in rows])
+
+async def clear_knowledge():
+    async with aiosqlite.connect(DB_NAME) as db:
+        await db.execute("DELETE FROM custom_knowledge")
+        await db.commit()
